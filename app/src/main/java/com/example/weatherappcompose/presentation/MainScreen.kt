@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,9 +30,9 @@ import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
-fun MainCard() {
+fun MainCard(currentDay: MutableState<WeatherModel>) {
     Column(
         modifier = Modifier
             .padding(5.dp)
@@ -52,12 +53,12 @@ fun MainCard() {
                 ) {
                     Text(
                         modifier = Modifier.padding(top = 8.dp, start = 8.dp),
-                        text = "20 Jun 2022 13:00",
+                        text = currentDay.value.time,
                         style = TextStyle(fontSize = 15.sp),
                         color = Color.White
                     )
                     AsyncImage(
-                        model = "http://cdn.weatherapi.com/weather/64x64/day/302.png",
+                        model = "http:${currentDay.value.icon}",
                         contentDescription = "img2",
                         modifier = Modifier
                             .size(35.dp)
@@ -65,17 +66,18 @@ fun MainCard() {
                     )
                 }
                 Text(
-                    text = "Prague",
+                    text = currentDay.value.city,
                     style = TextStyle(fontSize = 25.sp),
                     color = Color.White
                 )
                 Text(
-                    text = "30°C",
+                    text = if (currentDay.value.currentTemp.isNotEmpty())
+                        "${currentDay.value.currentTemp.toFloat().toInt()}°C" else "",
                     style = TextStyle(fontSize = 65.sp),
                     color = Color.White
                 )
                 Text(
-                    text = "Sunny",
+                    text = currentDay.value.condition,
                     style = TextStyle(fontSize = 16.sp),
                     color = Color.White
                 )
@@ -93,7 +95,10 @@ fun MainCard() {
                         )
                     }
                     Text(
-                        text = "22°C/12°C",
+                        text =
+                        if (currentDay.value.maxTemp.isNotEmpty() && currentDay.value.minTemp.isNotEmpty())
+                        "${currentDay.value.maxTemp.toFloat().toInt()}°C" +
+                                "/${currentDay.value.minTemp.toFloat().toInt()}°C" else "",
                         style = TextStyle(fontSize = 16.sp),
                         color = Color.White
                     )
@@ -114,7 +119,7 @@ fun MainCard() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabLayout(){
+fun TabLayout(daysList:MutableState<List<WeatherModel>>){
     val tabs = listOf("Hours","Days")
     val pagerState = rememberPagerState()
     val tabIndex = pagerState.currentPage
@@ -155,28 +160,7 @@ fun TabLayout(){
         ) { index->
             LazyColumn(modifier = Modifier.fillMaxSize()){
                 itemsIndexed(
-                    listOf(
-                        WeatherModel(
-                            "London",
-                            "10:00",
-                            "25ºC",
-                            "Sunny",
-                            "//cdn.weatherapi.com/weather/64x64/day/176.png",
-                            "",
-                            "",
-                            ""
-                        ),
-                        WeatherModel(
-                            "London",
-                            "26/07/2022",
-                            "",
-                            "Sunny",
-                            "//cdn.weatherapi.com/weather/64x64/day/176.png",
-                            "26º",
-                            "12º",
-                            "xdfghxdfthxfghxdft"
-                        )
-                    )
+                    daysList.value
                 ) { _, item->
                     ListItem(weatherModel = item)
                 }
